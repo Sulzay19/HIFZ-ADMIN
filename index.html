@@ -388,6 +388,9 @@
     width:92px;font-family:'Inter',sans-serif;font-size:13px;
     padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;
   }
+  #academicsTable th{white-space:normal;}
+  #academicsTable th,#academicsTable td{padding:9px 6px;}
+  #academicsTable input.cell-input{width:56px;padding:5px 4px;text-align:center;}
 
   /* Admissions module */
   .subnav{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--line);}
@@ -1005,6 +1008,8 @@
       </div>
       <div class="section-label">Progress by term (pages)</div>
       <div id="reportsBarChart" style="margin:10px 0 18px;"></div>
+      <div class="section-label">Progress by year (paras)</div>
+      <div id="reportsPieChart" style="margin:10px 0 18px;"></div>
       <div class="section-label">Summary</div>
       <div class="panel" style="background:var(--sage-tint);margin-top:8px;">
         <p id="reportsSummaryText" style="font-size:14px;line-height:1.7;margin:0;"></p>
@@ -1637,24 +1642,57 @@ function admConfirmAssignLearner(){
   const c = DB.candidates.find(x=>x.id===admAssignCandidateId);
   if(!c) return;
 
-  // Create the learner in Students from the candidate's details
+  const total = admTotal(c);
+  const scored = admIsScored(c);
+
+  // ageGrade holds a real date of birth when the candidate came from a parent
+  // application; otherwise it's free text (e.g. "9 years") and isn't a DOB.
+  const looksLikeDate = c.ageGrade && /^\d{4}-\d{2}-\d{2}$/.test(c.ageGrade.trim());
+  const dob = looksLikeDate ? c.ageGrade.trim() : "";
+
+  const noteParts = [];
+  noteParts.push(scored ? `Admitted via Admissions — entry score ${total}/18 (${admResultFor(total).label}).` : "Admitted via Admissions.");
+  if(!looksLikeDate && c.ageGrade) noteParts.push(`Age / Grade at assessment: ${c.ageGrade}.`);
+  if(c.comments) noteParts.push(`Evaluator comments: ${c.comments}`);
+  if(c.phase2 && (c.phase2.task || c.phase2.result)){
+    const t = c.phase2;
+    noteParts.push(`Phase 2 trial — portion: ${t.task||"—"}${t.mistakes!==null&&t.mistakes!==undefined?`, mistakes: ${t.mistakes}`:""}, result: ${t.result?t.result.toUpperCase():"—"}.`);
+  }
+  if(c.letterOpt2){
+    const lo2 = c.letterOpt2;
+    if(lo2.yearlyTarget) noteParts.push(`Yearly target: ${lo2.yearlyTarget}.`);
+    if(lo2.dailySabaq) noteParts.push(`Daily Sabaq: ${lo2.dailySabaq}.`);
+    if(lo2.holidayClass) noteParts.push(`Holiday class: ${lo2.holidayClass}.`);
+  }
+
+  // Create the learner in Students from every detail captured during admissions
   const id = nextId("STU","student");
   const record = {
     student_id: id,
     full_name: c.name,
-    gender: c.gender || "",
-    date_of_birth: "",
+    gender: (c.gender||"").toLowerCase(),
+    date_of_birth: dob,
     enrollment_date: new Date().toISOString().slice(0,10),
     starting_para: null,
     status: "active",
     status_note: "",
     graduation_date: "",
-    address: "",
-    notes: `Admitted via candidate assessment (${c.ageGrade||"age/grade not recorded"}).`,
-    entry_score_pct: admIsScored(c) ? Math.round((admTotal(c)/18)*100) : null
+    address: c.address || "",
+    notes: noteParts.join(" "),
+    entry_score_pct: scored ? Math.round((total/18)*100) : null
   };
   DB.students.push(record);
   assignStudentClass(id, DB.active_year_id, classId);
+
+  if(c.guardianName){
+    DB.guardians.push({
+      guardian_id: nextId("GRD","guardian"),
+      student_id: id,
+      full_name: c.guardianName,
+      relationship: (c.guardianRelationship||"guardian").toLowerCase(),
+      phone: c.guardianPhone||""
+    });
+  }
 
   c.assigned_student_id = id;
   saveDB(DB);
@@ -2632,8 +2670,9 @@ function closeReportModal(){ document.getElementById("reportModalBackdrop").clas
 
 /* ---------- Reports (auto-generated parent report) ---------- */
 function pronounsFor(gender){
-  if(gender==="male") return {subject:"he", object:"him", possessive:"his", subjectCap:"He"};
-  if(gender==="female") return {subject:"she", object:"her", possessive:"her", subjectCap:"She"};
+  const g = (gender||"").trim().toLowerCase();
+  if(g==="male") return {subject:"he", object:"him", possessive:"his", subjectCap:"He"};
+  if(g==="female") return {subject:"she", object:"her", possessive:"her", subjectCap:"She"};
   return {subject:"they", object:"them", possessive:"their", subjectCap:"They"};
 }
 function buildBarChartSVG(labels, values){
@@ -2656,6 +2695,51 @@ function buildBarChartSVG(labels, values){
     <line x1="${axisPad}" y1="${h-26}" x2="${w-4}" y2="${h-26}" stroke="#D8D2C4"></line>
     ${bars}
   </svg>`;
+}
+function buildPieChartSVG(segments){
+  const size = 190, r = 78, cx = 95, cy = 95;
+  const total = segments.reduce((a,s)=>a+(Number(s.value)||0), 0);
+  let svgBody;
+  const full = segments.find(s => total>0 && (Number(s.value)||0)/total > 0.9999);
+  if(total<=0){
+    svgBody = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#EDEBE3"></circle>`;
+  } else if(full){
+    svgBody = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${full.color}"></circle>`;
+  } else {
+    let startAngle = -90, paths = "";
+    segments.forEach(seg=>{
+      const val = Number(seg.value)||0;
+      if(val<=0) return;
+      const angle = (val/total)*360;
+      const endAngle = startAngle + angle;
+      const largeArc = angle>180 ? 1 : 0;
+      const startRad = (Math.PI/180)*startAngle, endRad = (Math.PI/180)*endAngle;
+      const x1 = cx + r*Math.cos(startRad), y1 = cy + r*Math.sin(startRad);
+      const x2 = cx + r*Math.cos(endRad), y2 = cy + r*Math.sin(endRad);
+      paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${seg.color}"></path>`;
+      startAngle = endAngle;
+    });
+    svgBody = paths;
+  }
+  const legend = segments.map(seg=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3A443F;margin-bottom:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${seg.color};display:inline-block;flex-shrink:0;"></span>${admEsc(seg.label)}: ${(Number(seg.value)||0).toFixed(2)} paras</div>`).join("");
+  return `<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+    <svg viewBox="0 0 ${size} ${size}" style="width:150px;height:150px;flex-shrink:0;">${svgBody}<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#D8D2C4"></circle></svg>
+    <div>${legend}</div>
+  </div>`;
+}
+/* Lifetime paras completed across every academic year on record (plus any
+   starting para the learner already had memorized before tracking began),
+   capped at TOTAL_PARAS. Used for the multi-year "Progress by year" pie
+   chart, since term/year progress alone only reflects the active year. */
+function computeLifetimeProgress(studentId){
+  const s = DB.students.find(s=>s.student_id===studentId);
+  const startingParas = Number(s && s.starting_para) || 0;
+  const totalPagesAllYears = DB.academic_progress
+    .filter(p=>p.student_id===studentId)
+    .reduce((sum,p)=>sum+(Number(p.pages_completed)||0), 0);
+  const totalParas = Math.min(TOTAL_PARAS, startingParas + (totalPagesAllYears / PAGES_PER_PARA));
+  const remainingParas = Math.max(0, TOTAL_PARAS - totalParas);
+  return {startingParas, totalParas, remainingParas};
 }
 function generateAcademicSummary(studentId){
   const s = DB.students.find(s=>s.student_id===studentId);
@@ -2726,6 +2810,11 @@ function renderReportsSelected(){
   document.getElementById("reportsStudentMeta").textContent = className(studentClassId(data.student.student_id)) + " · " + yearLabel(DB.active_year_id);
   const labels = data.terms.length ? data.terms.map(t=>t.label) : ["Term 1","Term 2","Term 3","Term 4"];
   document.getElementById("reportsBarChart").innerHTML = buildBarChartSVG(labels, data.pageVals);
+  const lifetime = computeLifetimeProgress(id);
+  document.getElementById("reportsPieChart").innerHTML = buildPieChartSVG([
+    {label: "Completed", value: lifetime.totalParas, color: "#2E6B45"},
+    {label: "Remaining", value: lifetime.remainingParas, color: "#D8D2C4"}
+  ]);
   document.getElementById("reportsSummaryText").textContent = data.text;
 }
 
