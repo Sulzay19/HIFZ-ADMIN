@@ -465,6 +465,9 @@
     body.printing-view .view.active .toolbar select,
     body.printing-view .view.active td button{display:none;}
     body.printing-view .view.active .no-print{display:none !important;}
+    body.printing-view .view.active .letter-option:not(.selected){display:none !important;}
+    body.printing-view .view.active .letter-option.selected .letter-option-body{display:block !important;}
+    body.printing-view .view.active .badge-suggested{display:none !important;}
   }
 </style>
 
@@ -533,6 +536,8 @@
     <div class="header-actions">
       <button class="btn header-btn small" onclick="openRolloverModal()">+ Start new year</button>
       <button class="btn header-btn small" onclick="exportData()">⬇ Save (JSON)</button>
+      <button class="btn header-btn small" onclick="document.getElementById('importFileInput').click()">⬆ Upload (JSON)</button>
+      <input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importDataFile(event)">
       <button class="btn header-btn small" onclick="printCurrentView()">🖶 Print</button>
     </div>
   </div>
@@ -568,6 +573,7 @@
       <button data-panel="evaluate" onclick="admShowPanel('evaluate')" style="display:none;">Evaluate</button>
       <button data-panel="summary" onclick="admShowPanel('summary')" style="display:none;">Summary</button>
       <button data-panel="letter" onclick="admShowPanel('letter')" style="display:none;">Letter</button>
+      <button data-panel="phase2" onclick="admShowPanel('phase2')" style="display:none;">Phase 2 Evaluation</button>
     </div>
 
     <!-- APPLICATIONS (from parents, via Firebase) -->
@@ -705,30 +711,6 @@
       </div>
 
       <div class="panel" style="margin-top:14px;">
-        <div class="toolbar">
-          <div class="section-label" style="margin:0;">Phase 2 Trial Assessment</div>
-          <span style="font-size:12px;color:#5A6B65;max-width:280px;text-align:right;">Fill this in once the learner returns to be tested on the task from Option 1.</span>
-        </div>
-        <div class="field-grid">
-          <div class="field"><label>Task given</label><input id="adm_s_task" placeholder="e.g. Surah An-Naba" oninput="admSetPhase2Field('task', this.value)"></div>
-          <div class="field"><label>Date tested</label><input type="date" id="adm_s_date" oninput="admSetPhase2Field('assessDate', this.value)"></div>
-        </div>
-        <div class="field-grid">
-          <div class="field"><label>Memorized</label><div class="yn-toggle" id="admSumMemorized"><button type="button" onclick="admSetTrialYN('memorized','Y')">Yes</button><button type="button" onclick="admSetTrialYN('memorized','N')">No</button></div></div>
-          <div class="field"><label>Completion</label><div class="yn-toggle" id="admSumCompletion"><button type="button" onclick="admSetTrialYN('completion','Y')">Yes</button><button type="button" onclick="admSetTrialYN('completion','N')">No</button></div></div>
-          <div class="field"><label>Fluency</label><div class="yn-toggle" id="admSumFluency"><button type="button" onclick="admSetTrialYN('fluency','Y')">Yes</button><button type="button" onclick="admSetTrialYN('fluency','N')">No</button></div></div>
-          <div class="field"><label>Mistake count</label><input type="number" min="0" id="adm_s_mistakes" oninput="admSetPhase2Field('mistakes', this.value, true)"></div>
-        </div>
-        <div class="modal-actions no-print" style="justify-content:flex-start;align-items:center;gap:10px;">
-          <span style="font-size:12px;font-weight:700;color:#5A6B65;">RESULT</span>
-          <button class="btn secondary small" onclick="admSetTrialResult('pass')">✓ Pass</button>
-          <button class="btn secondary small" onclick="admSetTrialResult('fail')">✗ Fail</button>
-          <button class="btn secondary small" onclick="admSetTrialResult(null)">Clear</button>
-          <span class="badge" id="admSumTrialBadge">Not yet tested</span>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-top:14px;">
         <div class="field"><label>Comments</label><textarea id="adm_s_comments" oninput="admSetField('comments', this.value)"></textarea></div>
         <div class="field-grid" style="margin-top:10px;">
           <div class="field"><label>Date</label><input type="date" id="adm_s_signdate" oninput="admSetField('date', this.value)"></div>
@@ -792,7 +774,17 @@
           </div>
           <div class="letter-option-body">
             <p><b><span id="admLetterName2">The learner</span> has been accepted into the Hifz Program.</b></p>
-            <p>Class times: <b>Monday–Friday</b> 5:45 AM &nbsp;·&nbsp; <b>Saturday</b> 5:45–9:00 AM.</p>
+            <p style="color:#5A6B65;font-size:12.5px;margin-top:10px;">Yearly targets:</p>
+            <div class="field-grid">
+              <div class="field"><label>Yearly Target</label><input id="adm_l_yearlytarget" placeholder="e.g. Completion of 3 Paras" oninput="admSetLetterOpt2Field('yearlyTarget', this.value)"></div>
+              <div class="field"><label>Daily Sabaq</label><input id="adm_l_dailysabaq" placeholder="e.g. 6 Lines per day" oninput="admSetLetterOpt2Field('dailySabaq', this.value)"></div>
+            </div>
+            <p style="font-size:12.5px;color:#5A6B65;margin-top:6px;"><b>Note:</b> targets must be met consistently, or admission will be reviewed.</p>
+            <p style="font-size:13px;margin-top:10px;">Class times: <b>Monday–Friday</b> 5:45 AM &nbsp;·&nbsp; <b>Saturday</b> 5:45–9:00 AM.</p>
+            <div class="field-grid">
+              <div class="field"><label>Holiday Class</label><input id="adm_l_holidayclass" oninput="admSetLetterOpt2Field('holidayClass', this.value)"></div>
+              <div class="field"><label>Starting Date</label><input type="date" id="adm_l_startingdate" oninput="admSetLetterOpt2Field('startingDate', this.value)"></div>
+            </div>
             <div class="modal-actions no-print" style="justify-content:flex-start;">
               <button class="btn small" onclick="admEnrollFromCandidate()">Enroll as Student →</button>
             </div>
@@ -814,7 +806,45 @@
           <div><div class="sig-line"></div><b>Principal's Signature</b></div>
         </div>
         <div class="modal-actions no-print">
+          <button class="btn secondary" onclick="admShowPanel('phase2')">Phase 2 Evaluation →</button>
           <button class="btn secondary" onclick="printCurrentView()">🖶 Print Letter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 EVALUATION -->
+    <div class="subpanel" id="admPanel-phase2">
+      <button class="btn secondary small no-print" onclick="admShowPanel('letter')">&larr; Back to letter</button>
+      <div class="panel" style="margin-top:14px;">
+        <div class="report-letterhead" id="admPhase2Letterhead"></div>
+        <div class="toolbar">
+          <h2 style="font-size:18px;">Phase 2 Evaluation — <span id="admPhase2Name"></span></h2>
+        </div>
+
+        <div class="section-label">Phase Two — Trial Assessment</div>
+        <div class="field-grid">
+          <div class="field"><label>Assigned task</label><input id="adm_p2_task" placeholder="e.g. Surah An-Naba" oninput="admSetPhase2Field('task', this.value)"></div>
+          <div class="field"><label>Assessment date</label><input type="date" id="adm_p2_date" oninput="admSetPhase2Field('assessDate', this.value)"></div>
+        </div>
+        <div class="field-grid single">
+          <div class="field"><label>Mistakes</label><input type="number" min="0" id="adm_p2_mistakes" oninput="admSetPhase2Field('mistakes', this.value, true)"></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Memorized in full?</label><div class="yn-toggle" id="admP2Memorized"><button type="button" onclick="admSetTrialYN('memorized','Y')">Yes</button><button type="button" onclick="admSetTrialYN('memorized','N')">No</button></div></div>
+          <div class="field"><label>Completed?</label><div class="yn-toggle" id="admP2Completion"><button type="button" onclick="admSetTrialYN('completion','Y')">Yes</button><button type="button" onclick="admSetTrialYN('completion','N')">No</button></div></div>
+          <div class="field"><label>Fluent?</label><div class="yn-toggle" id="admP2Fluency"><button type="button" onclick="admSetTrialYN('fluency','Y')">Yes</button><button type="button" onclick="admSetTrialYN('fluency','N')">No</button></div></div>
+        </div>
+        <div class="modal-actions no-print" style="justify-content:flex-start;align-items:center;gap:10px;">
+          <button class="btn secondary small" onclick="admSetTrialResult('pass')">Mark trial passed</button>
+          <button class="btn secondary small" onclick="admSetTrialResult('fail')">Mark trial failed</button>
+          <button class="btn secondary small" onclick="admSetTrialResult(null)">Clear result</button>
+          <span class="badge" id="admP2TrialBadge">Not yet tested</span>
+        </div>
+
+        <div class="modal-actions no-print">
+          <button class="btn secondary" onclick="admSaveEvaluation()">Save</button>
+          <button class="btn" onclick="admOpenLetter()">📄 Generate Outcome Letter →</button>
+          <button class="btn secondary" onclick="printCurrentView()">🖶 Print</button>
         </div>
       </div>
     </div>
@@ -973,10 +1003,29 @@
     </div>
   </section>
   <section class="view" id="view-reports">
-    <div class="panel coming-soon">
-      <h2>Reports</h2>
-      <p>Generated parent reports, pulling from academics and discipline for the selected term.</p>
-      <ul><li>prose-style Learner Report</li><li>print / export</li></ul>
+    <div class="toolbar">
+      <div class="filters">
+        <select id="reportsStudentSelect" onchange="renderReportsSelected()">
+          <option value="">Select a learner…</option>
+        </select>
+      </div>
+      <button class="btn secondary small no-print" onclick="printCurrentView()">🖶 Print Report</button>
+    </div>
+    <div class="panel" id="reportsEmptyState">
+      <p style="color:#8A968F;">Select a learner above to generate their Academic Progress report, pulled live from the Academic Progress tab.</p>
+    </div>
+    <div class="panel" id="reportsContentWrap" style="display:none;">
+      <div class="report-letterhead" id="reportsLetterhead"></div>
+      <div class="report-head">
+        <h3 id="reportsStudentName"></h3>
+        <div class="meta" id="reportsStudentMeta"></div>
+      </div>
+      <div class="section-label">Progress by term (pages)</div>
+      <div id="reportsBarChart" style="margin:10px 0 18px;"></div>
+      <div class="section-label">Summary</div>
+      <div class="panel" style="background:var(--sage-tint);margin-top:8px;">
+        <p id="reportsSummaryText" style="font-size:14px;line-height:1.7;margin:0;"></p>
+      </div>
     </div>
   </section>
 </main>
@@ -1345,6 +1394,7 @@ function showView(id){
   if(id==="yearend") renderYearEnd();
   if(id==="discipline") renderDiscipline();
   if(id==="graduates") renderGraduates();
+  if(id==="reports") renderReports();
 }
 
 /* ==================== ADMISSIONS MODULE ==================== */
@@ -1401,6 +1451,7 @@ function admShowPanel(panel){
   document.getElementById("admPanel-"+panel).classList.add("active");
   if(panel==="candidates") admRenderCandidates();
   if(panel==="summary") admRenderSummary();
+  if(panel==="phase2") admRenderPhase2();
 }
 
 /* ---------- Applications inbox (Firestore) ---------- */
@@ -1442,6 +1493,7 @@ function admRenderApplications(apps){
           <button class="btn small" onclick='admStartEvaluationFromApp(${JSON.stringify(a).replace(/'/g,"&apos;")})' ${status==="in_review"||status==="converted"?"disabled":""}>
             ${status==="in_review"||status==="converted" ? "Already in candidates" : "Start Evaluation →"}
           </button>
+          <button class="btn danger small" onclick="admDeleteApplication('${a.id}')">Delete</button>
         </div>
       </div>`;
   }).join("");
@@ -1471,6 +1523,17 @@ function admStartEvaluationFromApp(app){
     fbDB.collection("applications").doc(app.id).update({status:"in_review"}).catch(err=>console.warn(err));
   }
   admOpenCandidate(candidate.id);
+}
+
+function admDeleteApplication(id){
+  if(!confirm("Remove this application? This cannot be undone.")) return;
+  if(!fbDB){ alert("Firebase isn't configured, so applications can't be deleted here."); return; }
+  fbDB.collection("applications").doc(id).delete().then(()=>{
+    admLoadApplications();
+  }).catch(err=>{
+    console.error(err);
+    alert("Couldn't delete this application: " + err.message);
+  });
 }
 
 /* ---------- Candidates ---------- */
@@ -1615,9 +1678,10 @@ function admOpenCandidate(id){
   document.querySelector('#admSubnav button[data-panel="evaluate"]').style.display = "inline-block";
   document.querySelector('#admSubnav button[data-panel="summary"]').style.display = "inline-block";
   document.querySelector('#admSubnav button[data-panel="letter"]').style.display = "inline-block";
+  document.querySelector('#admSubnav button[data-panel="phase2"]').style.display = "inline-block";
 }
 function admUpdateYN(field, val){
-  ["admTrial","admSum"].forEach(prefix=>{
+  ["admTrial","admSum","admP2"].forEach(prefix=>{
     const wrap = document.getElementById(prefix+field.charAt(0).toUpperCase()+field.slice(1));
     if(!wrap) return;
     const btns = wrap.querySelectorAll("button");
@@ -1646,6 +1710,14 @@ function admSetField(prop, value){
   const c = DB.candidates.find(x=>x.id===admCurrentCandidateId);
   if(!c) return;
   c[prop] = value;
+  saveDB(DB);
+}
+const ADM_BLANK_LETTER_OPT2 = {yearlyTarget:"", dailySabaq:"", holidayClass:"", startingDate:""};
+function admSetLetterOpt2Field(prop, value){
+  const c = DB.candidates.find(x=>x.id===admCurrentCandidateId);
+  if(!c) return;
+  if(!c.letterOpt2) c.letterOpt2 = Object.assign({}, ADM_BLANK_LETTER_OPT2);
+  c.letterOpt2[prop] = value;
   saveDB(DB);
 }
 function admSetPhase2Field(prop, value, isNumber){
@@ -1680,6 +1752,11 @@ function admOpenLetter(){
   const t = c.phase2 || ADM_BLANK_PHASE2;
   document.getElementById("adm_l_task").value = t.task || "";
   document.getElementById("adm_l_taskdate").value = t.assessDate || "";
+  const lo2 = c.letterOpt2 || ADM_BLANK_LETTER_OPT2;
+  document.getElementById("adm_l_yearlytarget").value = lo2.yearlyTarget || "";
+  document.getElementById("adm_l_dailysabaq").value = lo2.dailySabaq || "";
+  document.getElementById("adm_l_holidayclass").value = lo2.holidayClass || "";
+  document.getElementById("adm_l_startingdate").value = lo2.startingDate || "";
   admUpdateLetterName();
   const total = admTotal(c);
   const pct = Math.round((total/18)*100);
@@ -1730,11 +1807,25 @@ function admSumScoreRowsHTML(c, part){
   }).join("");
 }
 function admRenderTrialResultBadge(result){
-  const badge = document.getElementById("admSumTrialBadge");
+  const badge = document.getElementById("admP2TrialBadge");
   if(!badge) return;
   if(result==="pass"){ badge.textContent = "✓ Pass"; badge.className = "badge ready"; }
   else if(result==="fail"){ badge.textContent = "✗ Fail"; badge.className = "badge fail"; }
   else { badge.textContent = "Not yet tested"; badge.className = "badge pending"; }
+}
+function admRenderPhase2(){
+  const c = DB.candidates.find(x=>x.id===admCurrentCandidateId);
+  if(!c) return;
+  document.getElementById("admPhase2Letterhead").innerHTML = schoolLetterheadHTML();
+  document.getElementById("admPhase2Name").textContent = c.name || "—";
+  const t = c.phase2 || ADM_BLANK_PHASE2;
+  document.getElementById("adm_p2_task").value = t.task || "";
+  document.getElementById("adm_p2_date").value = t.assessDate || "";
+  document.getElementById("adm_p2_mistakes").value = (t.mistakes===null||t.mistakes===undefined) ? "" : t.mistakes;
+  admUpdateYN("memorized", t.memorized);
+  admUpdateYN("completion", t.completion);
+  admUpdateYN("fluency", t.fluency);
+  admRenderTrialResultBadge(t.result);
 }
 function admRenderSummary(){
   const c = DB.candidates.find(x=>x.id===admCurrentCandidateId);
@@ -1759,17 +1850,9 @@ function admRenderSummary(){
   document.getElementById("admSumPart1").innerHTML = admSumScoreRowsHTML(c, 1);
   document.getElementById("admSumPart2").innerHTML = admSumScoreRowsHTML(c, 2);
 
-  const t = c.phase2 || ADM_BLANK_PHASE2;
-  document.getElementById("adm_s_task").value = t.task || "";
-  document.getElementById("adm_s_date").value = t.assessDate || "";
-  document.getElementById("adm_s_mistakes").value = (t.mistakes===null||t.mistakes===undefined) ? "" : t.mistakes;
   document.getElementById("adm_s_comments").value = c.comments || "";
   document.getElementById("adm_s_signdate").value = c.date || "";
   document.getElementById("adm_s_evaluator").value = c.evaluator || "";
-  admUpdateYN("memorized", t.memorized);
-  admUpdateYN("completion", t.completion);
-  admUpdateYN("fluency", t.fluency);
-  admRenderTrialResultBadge(t.result);
 }
 function admDownloadReport(){
   const c = DB.candidates.find(x=>x.id===admCurrentCandidateId);
@@ -2491,6 +2574,105 @@ function openAcademicReport(studentId){
 
 function closeReportModal(){ document.getElementById("reportModalBackdrop").classList.remove("active"); }
 
+/* ---------- Reports (auto-generated parent report) ---------- */
+function pronounsFor(gender){
+  if(gender==="male") return {subject:"he", object:"him", possessive:"his", subjectCap:"He"};
+  if(gender==="female") return {subject:"she", object:"her", possessive:"her", subjectCap:"She"};
+  return {subject:"they", object:"them", possessive:"their", subjectCap:"They"};
+}
+function buildBarChartSVG(labels, values){
+  const w = 520, h = 190, axisPad = 34, barGap = 18;
+  const maxValue = Math.max(1, ...values.map(v=>Number(v)||0));
+  const plotW = w - axisPad - 10;
+  const barWidth = Math.max(18, (plotW - (labels.length+1)*barGap) / Math.max(1, labels.length));
+  const scale = (h - 40) / maxValue;
+  let bars = "";
+  labels.forEach((lbl, i) => {
+    const val = Number(values[i]) || 0;
+    const barH = Math.max(0, val * scale);
+    const x = axisPad + barGap + i*(barWidth+barGap);
+    const y = h - 26 - barH;
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barH.toFixed(1)}" rx="4" fill="#2E6B45"></rect>`;
+    bars += `<text x="${(x+barWidth/2).toFixed(1)}" y="${h-8}" text-anchor="middle" font-size="11" fill="#5A6B65">${admEsc(lbl)}</text>`;
+    if(val>0) bars += `<text x="${(x+barWidth/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle" font-size="11" fill="#1B2E28">${val}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:560px;height:auto;font-family:inherit;">
+    <line x1="${axisPad}" y1="${h-26}" x2="${w-4}" y2="${h-26}" stroke="#D8D2C4"></line>
+    ${bars}
+  </svg>`;
+}
+function generateAcademicSummary(studentId){
+  const s = DB.students.find(s=>s.student_id===studentId);
+  if(!s) return null;
+  const terms = yearTermsSorted();
+  const termProgress = terms.map(t=>getProgress(studentId, t.term_id));
+  const yearTarget = termProgress.find(p=>p)?.target_year_paras || 0;
+  const pageVals = termProgress.map(p=>Number(p && p.pages_completed)||0);
+  const totalPages = pageVals.reduce((a,b)=>a+b, 0);
+  const totalParas = totalPages / PAGES_PER_PARA;
+  const remainingPages = Math.max(0, TOTAL_PAGES - totalPages);
+  const pct = TOTAL_PAGES ? Math.round((totalPages/TOTAL_PAGES)*100) : 0;
+  const yearTargetPct = yearTarget ? Math.min(100, Math.round((totalParas/yearTarget)*100)) : null;
+  const pn = pronounsFor(s.gender);
+  const name = s.full_name || "This learner";
+
+  let text;
+  if(totalPages<=0){
+    text = `${name} has not yet recorded any memorization progress this year. `;
+  } else {
+    text = `So far this academic year, ${name} has memorized ${pagesLabel(totalPages)} (${totalParas.toFixed(2)} paras) of the Qur'an, with ${pagesLabel(remainingPages)} remaining to complete all ${TOTAL_PARAS} paras. `;
+  }
+
+  if(yearTarget){
+    if(yearTargetPct>=100){
+      text += `${pn.subjectCap} has met ${pn.possessive} yearly target of ${yearTarget} para${yearTarget===1?"":"s"} — mashaAllah, an excellent achievement! `;
+    } else if(yearTargetPct>=70){
+      text += `${pn.subjectCap} is making strong progress toward ${pn.possessive} yearly target of ${yearTarget} para${yearTarget===1?"":"s"}, currently at ${yearTargetPct}% of the way there. `;
+    } else if(yearTargetPct>0){
+      text += `${pn.subjectCap} is at ${yearTargetPct}% of ${pn.possessive} yearly target of ${yearTarget} para${yearTarget===1?"":"s"} so far — with steady daily effort, ${pn.subject} can still reach it by the end of the year. `;
+    }
+  }
+
+  let encouragement;
+  if(pct>=70){
+    encouragement = `${pn.subjectCap} should feel proud of how far ${pn.subject} has come — keep up the wonderful effort and consistency!`;
+  } else if(pct>=30){
+    encouragement = `${pn.subjectCap} is building a solid foundation. A little more daily consistency will carry ${pn.object} a long way — keep going!`;
+  } else {
+    encouragement = `Every page memorized is a real achievement. With regular daily revision and support at home, ${pn.subject} will keep growing in confidence, in shaa Allah.`;
+  }
+  text += encouragement;
+
+  return {student: s, terms, pageVals, totalPages, totalParas, remainingPages, yearTarget, pct, text};
+}
+function populateReportsSelect(){
+  const sel = document.getElementById("reportsStudentSelect");
+  const cur = sel.value;
+  const rows = DB.students.filter(s=>s.status==="active").slice().sort((a,b)=>(a.full_name||"").localeCompare(b.full_name||""));
+  sel.innerHTML = `<option value="">Select a learner…</option>` + rows.map(s=>`<option value="${s.student_id}">${admEsc(s.full_name)} — ${admEsc(className(studentClassId(s.student_id)))}</option>`).join("");
+  sel.value = cur;
+}
+function renderReports(){
+  populateReportsSelect();
+  renderReportsSelected();
+}
+function renderReportsSelected(){
+  const id = document.getElementById("reportsStudentSelect").value;
+  const empty = document.getElementById("reportsEmptyState");
+  const wrap = document.getElementById("reportsContentWrap");
+  if(!id){ empty.style.display = "block"; wrap.style.display = "none"; return; }
+  const data = generateAcademicSummary(id);
+  if(!data){ empty.style.display = "block"; wrap.style.display = "none"; return; }
+  empty.style.display = "none";
+  wrap.style.display = "block";
+  document.getElementById("reportsLetterhead").innerHTML = schoolLetterheadHTML();
+  document.getElementById("reportsStudentName").textContent = data.student.full_name;
+  document.getElementById("reportsStudentMeta").textContent = className(studentClassId(data.student.student_id)) + " · " + yearLabel(DB.active_year_id);
+  const labels = data.terms.length ? data.terms.map(t=>t.label) : ["Term 1","Term 2","Term 3","Term 4"];
+  document.getElementById("reportsBarChart").innerHTML = buildBarChartSVG(labels, data.pageVals);
+  document.getElementById("reportsSummaryText").textContent = data.text;
+}
+
 /* ---------- Discipline ---------- */
 const DISCIPLINE_LABELS = {good:"Good conduct", warning:"Warning", parent_meeting:"Parent meeting", suspension:"Suspension", expulsion:"Expulsion"};
 
@@ -2661,6 +2843,44 @@ function exportData(){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function importDataFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      let data = JSON.parse(e.target.result);
+      if(!data || typeof data !== "object" || !Array.isArray(data.students)){
+        throw new Error("not a backup file");
+      }
+      if(!confirm("Loading this backup will replace all current data in this browser. Continue?")){
+        event.target.value = "";
+        return;
+      }
+      data.academic_progress = data.academic_progress || [];
+      data.discipline_log = data.discipline_log || [];
+      data.class_assignments = data.class_assignments || [];
+      data.candidates = data.candidates || [];
+      data.year_end_decisions = data.year_end_decisions || [];
+      data.seq = data.seq || {};
+      data.seq.progress = data.seq.progress || 0;
+      data.seq.discipline = data.seq.discipline || 0;
+      data.seq.candidate = data.seq.candidate || 0;
+      data = migrateToYears(data);
+      DB = data;
+      saveDB(DB);
+      renderHeader();
+      refreshCurrentView();
+      alert("Backup loaded successfully.");
+    }catch(err){
+      console.error(err);
+      alert("Couldn't read this file — please choose a valid Hifz Admin JSON backup.");
+    }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
 }
 
 function printCurrentView(){
