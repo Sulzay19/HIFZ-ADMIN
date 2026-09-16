@@ -655,23 +655,6 @@
           <div class="field"><label>Comments</label><textarea id="adm_e_comments" oninput="admSetField('comments', this.value)"></textarea></div>
         </div>
 
-        <div class="section-label">Phase Two — Trial Assessment (optional)</div>
-        <div class="field-grid">
-          <div class="field"><label>Assigned task</label><input id="adm_t_task" placeholder="e.g. Surah An-Naba" oninput="admSetPhase2Field('task', this.value)"></div>
-          <div class="field"><label>Assessment date</label><input type="date" id="adm_t_date" oninput="admSetPhase2Field('assessDate', this.value)"></div>
-          <div class="field"><label>Mistakes</label><input type="number" min="0" id="adm_t_mistakes" oninput="admSetPhase2Field('mistakes', this.value, true)"></div>
-        </div>
-        <div class="field-grid">
-          <div class="field"><label>Memorized in full?</label><div class="yn-toggle" id="admTrialMemorized"><button type="button" onclick="admSetTrialYN('memorized','Y')">Yes</button><button type="button" onclick="admSetTrialYN('memorized','N')">No</button></div></div>
-          <div class="field"><label>Completed?</label><div class="yn-toggle" id="admTrialCompletion"><button type="button" onclick="admSetTrialYN('completion','Y')">Yes</button><button type="button" onclick="admSetTrialYN('completion','N')">No</button></div></div>
-          <div class="field"><label>Fluent?</label><div class="yn-toggle" id="admTrialFluency"><button type="button" onclick="admSetTrialYN('fluency','Y')">Yes</button><button type="button" onclick="admSetTrialYN('fluency','N')">No</button></div></div>
-        </div>
-        <div class="modal-actions" style="justify-content:flex-start;">
-          <button class="btn secondary small" onclick="admSetTrialResult('pass')">Mark trial passed</button>
-          <button class="btn secondary small" onclick="admSetTrialResult('fail')">Mark trial failed</button>
-          <button class="btn secondary small" onclick="admSetTrialResult(null)">Clear result</button>
-        </div>
-
         <div class="modal-actions">
           <button class="btn secondary" onclick="admSaveEvaluation()">Save</button>
           <button class="btn" onclick="admRenderCandidates(); admShowPanel('summary')">View Summary →</button>
@@ -1667,9 +1650,6 @@ function admOpenCandidate(id){
   admUpdateTotals();
 
   const t = c.phase2 || ADM_BLANK_PHASE2;
-  document.getElementById("adm_t_task").value = t.task || "";
-  document.getElementById("adm_t_date").value = t.assessDate || "";
-  document.getElementById("adm_t_mistakes").value = (t.mistakes===null||t.mistakes===undefined) ? "" : t.mistakes;
   admUpdateYN("memorized", t.memorized);
   admUpdateYN("completion", t.completion);
   admUpdateYN("fluency", t.fluency);
