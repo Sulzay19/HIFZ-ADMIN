@@ -616,7 +616,7 @@
       </div>
       <div class="panel" style="padding:0;overflow-x:auto;">
         <table id="admCandidatesTable">
-          <thead><tr><th>Name</th><th>Gender</th><th>Age / Grade</th><th>Score</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Gender</th><th>Age / Grade</th><th>Score</th><th>Status</th><th>Assign Learner</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -1081,6 +1081,24 @@
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeClassModal()">Cancel</button>
       <button class="btn" onclick="saveClass()">Save class</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN LEARNER MODAL -->
+<div class="modal-backdrop" id="assignLearnerModalBackdrop">
+  <div class="modal">
+    <div class="close-row">
+      <h2>Assign Learner to a Class</h2>
+      <button class="x" onclick="closeAssignLearnerModal()">&times;</button>
+    </div>
+    <p style="margin:0 0 12px;color:#5A6B65;">Assigning <strong id="assignLearnerName"></strong> will add them to Students and place them in the class you choose.</p>
+    <div class="field-grid">
+      <div class="field"><label>Class</label><select id="assign_l_class_id"></select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeAssignLearnerModal()">Cancel</button>
+      <button class="btn" onclick="admConfirmAssignLearner()">Assign learner</button>
     </div>
   </div>
 </div>
@@ -1572,9 +1590,18 @@ function admRenderCandidates(){
   tbody.innerHTML = DB.candidates.map(c => {
     const total = admTotal(c);
     const scored = admIsScored(c);
-    let statusHtml = scored ? `<span class="badge ${admResultFor(total).cls}">${admResultFor(total).label}</span>` : `<span class="badge pending">Not yet evaluated</span>`;
+    let statusHtml;
     if(c.phase2 && c.phase2.result){
-      statusHtml += ` <span class="badge trial">${c.phase2.result==="pass"?"Trial Passed":"Trial Failed"}</span>`;
+      // Phase 2 trial result supersedes the phase 1 "Almost Ready" outcome
+      statusHtml = `<span class="badge trial">${c.phase2.result==="pass"?"Trial Passed":"Trial Failed"}</span>`;
+    } else {
+      statusHtml = scored ? `<span class="badge ${admResultFor(total).cls}">${admResultFor(total).label}</span>` : `<span class="badge pending">Not yet evaluated</span>`;
+    }
+    let assignHtml = "—";
+    if(c.phase2 && c.phase2.result==="pass"){
+      assignHtml = c.assigned_student_id
+        ? `<span class="badge ready">Assigned — ${admEsc(className(studentClassId(c.assigned_student_id)))}</span>`
+        : `<button class="btn secondary small" onclick="admOpenAssignLearner('${c.id}')">Assign Learner</button>`;
     }
     return `<tr>
       <td class="name-cell" onclick="admOpenCandidate('${c.id}')">${admEsc(c.name)}</td>
@@ -1582,10 +1609,59 @@ function admRenderCandidates(){
       <td>${admEsc(c.ageGrade||"—")}</td>
       <td>${scored ? total+" / 18" : "—"}</td>
       <td>${statusHtml}</td>
+      <td>${assignHtml}</td>
       <td><button class="btn secondary small" onclick="admOpenCandidate('${c.id}')">${scored?"Continue":"Evaluate"}</button>
           <button class="btn danger small" onclick="admDeleteCandidate('${c.id}')">Remove</button></td>
     </tr>`;
   }).join("");
+}
+
+/* ---------- Assign passed candidate to a class as a learner ---------- */
+let admAssignCandidateId = null;
+function admOpenAssignLearner(candidateId){
+  admAssignCandidateId = candidateId;
+  const yearClasses = DB.classes.filter(c=>c.year_id===DB.active_year_id);
+  const sel = document.getElementById("assign_l_class_id");
+  sel.innerHTML = `<option value="">— select a class —</option>` + yearClasses.map(c=>`<option value="${c.class_id}">${admEsc(c.name)}</option>`).join("");
+  const c = DB.candidates.find(x=>x.id===candidateId);
+  document.getElementById("assignLearnerName").textContent = c ? c.name : "";
+  document.getElementById("assignLearnerModalBackdrop").classList.add("active");
+}
+function closeAssignLearnerModal(){
+  document.getElementById("assignLearnerModalBackdrop").classList.remove("active");
+  admAssignCandidateId = null;
+}
+function admConfirmAssignLearner(){
+  const classId = document.getElementById("assign_l_class_id").value;
+  if(!classId){ alert("Please select a class."); return; }
+  const c = DB.candidates.find(x=>x.id===admAssignCandidateId);
+  if(!c) return;
+
+  // Create the learner in Students from the candidate's details
+  const id = nextId("STU","student");
+  const record = {
+    student_id: id,
+    full_name: c.name,
+    gender: c.gender || "",
+    date_of_birth: "",
+    enrollment_date: new Date().toISOString().slice(0,10),
+    starting_para: null,
+    status: "active",
+    status_note: "",
+    graduation_date: "",
+    address: "",
+    notes: `Admitted via candidate assessment (${c.ageGrade||"age/grade not recorded"}).`,
+    entry_score_pct: admIsScored(c) ? Math.round((admTotal(c)/18)*100) : null
+  };
+  DB.students.push(record);
+  assignStudentClass(id, DB.active_year_id, classId);
+
+  c.assigned_student_id = id;
+  saveDB(DB);
+  closeAssignLearnerModal();
+  admRenderCandidates();
+  if(typeof renderStudents === "function") renderStudents();
+  if(typeof renderClasses === "function") renderClasses();
 }
 
 /* ---------- Evaluation ---------- */
