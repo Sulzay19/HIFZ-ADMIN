@@ -2697,7 +2697,7 @@ function buildBarChartSVG(labels, values){
   </svg>`;
 }
 function buildPieChartSVG(segments){
-  const size = 190, r = 78, cx = 95, cy = 95;
+  const size = 320, r = 140, cx = 160, cy = 160;
   const total = segments.reduce((a,s)=>a+(Number(s.value)||0), 0);
   let svgBody;
   const full = segments.find(s => total>0 && (Number(s.value)||0)/total > 0.9999);
@@ -2716,14 +2716,14 @@ function buildPieChartSVG(segments){
       const startRad = (Math.PI/180)*startAngle, endRad = (Math.PI/180)*endAngle;
       const x1 = cx + r*Math.cos(startRad), y1 = cy + r*Math.sin(startRad);
       const x2 = cx + r*Math.cos(endRad), y2 = cy + r*Math.sin(endRad);
-      paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${seg.color}"></path>`;
+      paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${seg.color}" stroke="#FAF7F0" stroke-width="2"></path>`;
       startAngle = endAngle;
     });
     svgBody = paths;
   }
   const legend = segments.map(seg=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3A443F;margin-bottom:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${seg.color};display:inline-block;flex-shrink:0;"></span>${admEsc(seg.label)}: ${(Number(seg.value)||0).toFixed(2)} paras</div>`).join("");
   return `<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
-    <svg viewBox="0 0 ${size} ${size}" style="width:150px;height:150px;flex-shrink:0;">${svgBody}<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#D8D2C4"></circle></svg>
+    <svg viewBox="0 0 ${size} ${size}" style="width:260px;height:260px;flex-shrink:0;">${svgBody}</svg>
     <div>${legend}</div>
   </div>`;
 }
@@ -2812,8 +2812,8 @@ function renderReportsSelected(){
   document.getElementById("reportsBarChart").innerHTML = buildBarChartSVG(labels, data.pageVals);
   const lifetime = computeLifetimeProgress(id);
   document.getElementById("reportsPieChart").innerHTML = buildPieChartSVG([
-    {label: "Completed", value: lifetime.totalParas, color: "#2E6B45"},
-    {label: "Remaining", value: lifetime.remainingParas, color: "#D8D2C4"}
+    {label: "Completed", value: lifetime.totalParas, color: "#04342C"},
+    {label: "Remaining", value: lifetime.remainingParas, color: "#5DCAA5"}
   ]);
   document.getElementById("reportsSummaryText").textContent = data.text;
 }

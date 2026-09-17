@@ -1,0 +1,109 @@
+{
+  "students": [],
+  "guardians": [],
+  "classes": [
+    {
+      "class_id": "CLS-0001",
+      "name": "class 1",
+      "teacher_id": "TCH-0001",
+      "year_id": "YR-0001",
+      "capacity": 20
+    }
+  ],
+  "teachers": [
+    {
+      "teacher_id": "TCH-0001",
+      "full_name": "suleiman",
+      "phone": "4567",
+      "email": "",
+      "status": "active"
+    }
+  ],
+  "years": [
+    {
+      "year_id": "YR-0001",
+      "label": "2026"
+    }
+  ],
+  "active_year_id": "YR-0001",
+  "terms": [
+    {
+      "term_id": "T1",
+      "year_id": "YR-0001",
+      "label": "Term 1"
+    },
+    {
+      "term_id": "T2",
+      "year_id": "YR-0001",
+      "label": "Term 2"
+    },
+    {
+      "term_id": "T3",
+      "year_id": "YR-0001",
+      "label": "Term 3"
+    },
+    {
+      "term_id": "T4",
+      "year_id": "YR-0001",
+      "label": "Term 4"
+    }
+  ],
+  "active_term_id": "T1",
+  "academic_progress": [],
+  "discipline_log": [],
+  "class_assignments": [],
+  "candidates": [
+    {
+      "id": "C1789556316786712",
+      "name": "Usamah suleiman Hamido",
+      "gender": "Male",
+      "ageGrade": "2019-11-18",
+      "date": "2026-09-17",
+      "evaluator": "",
+      "scores": {
+        "fluency": 1,
+        "accuracy": 2,
+        "tajweed": 2,
+        "memory": 2,
+        "focus": 2,
+        "correction": 3
+      },
+      "comments": "",
+      "phase2": {
+        "task": "surah naba 6 pages",
+        "assessDate": "2026-09-18",
+        "memorized": "N",
+        "completion": "N",
+        "fluency": "N",
+        "mistakes": 3,
+        "result": "fail"
+      },
+      "applicationId": "Us5tlNvrgx5gj3nXYY7W",
+      "guardianName": "Suweyma nagibo",
+      "guardianRelationship": "mother",
+      "guardianPhone": "0714978754",
+      "guardianEmail": "suweymanagibo85@gmail.com",
+      "address": "352 agra west -laudium",
+      "letterDate": "2026-09-18",
+      "letterOpt2": {
+        "yearlyTarget": "3 paras",
+        "dailySabaq": "6 lines",
+        "holidayClass": "",
+        "startingDate": "2026-09-21"
+      }
+    }
+  ],
+  "year_end_decisions": [],
+  "seq": {
+    "student": 0,
+    "class": 1,
+    "teacher": 1,
+    "guardian": 0,
+    "progress": 0,
+    "discipline": 0,
+    "year": 1,
+    "term": 0,
+    "assignment": 0,
+    "candidate": 0
+  }
+}
