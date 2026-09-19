@@ -1,0 +1,173 @@
+{
+  "students": [
+    {
+      "student_id": "STU-0001",
+      "full_name": "Zainab suleiman Hamido",
+      "gender": "female",
+      "date_of_birth": "2015-03-19",
+      "enrollment_date": "2025-02-10",
+      "starting_para": 30,
+      "status": "active",
+      "status_note": "",
+      "graduation_date": "",
+      "address": "352 Agra West Street laudium",
+      "notes": "",
+      "entry_score_pct": null
+    }
+  ],
+  "guardians": [
+    {
+      "guardian_id": "GRD-0002",
+      "student_id": "STU-0001",
+      "full_name": "suleiman Hamido",
+      "relationship": "father",
+      "phone": "0698687019"
+    }
+  ],
+  "classes": [
+    {
+      "class_id": "CLS-0001",
+      "name": "HIFZ CLASS 1",
+      "teacher_id": "TCH-0001",
+      "year_id": "YR-0001",
+      "capacity": null
+    },
+    {
+      "class_id": "CLS-0002",
+      "name": "HIFZ CLASS 2",
+      "teacher_id": "TCH-0002",
+      "year_id": "YR-0001",
+      "capacity": null
+    },
+    {
+      "class_id": "CLS-0003",
+      "name": "HIFZ CLASS 3",
+      "teacher_id": "TCH-0003",
+      "year_id": "YR-0001",
+      "capacity": null
+    },
+    {
+      "class_id": "CLS-0004",
+      "name": "HIFZ CLASS 4",
+      "teacher_id": "TCH-0004",
+      "year_id": "YR-0001",
+      "capacity": null
+    }
+  ],
+  "teachers": [
+    {
+      "teacher_id": "TCH-0001",
+      "full_name": "sheikh Suleiman Bindullah Hamido",
+      "phone": "0698687019",
+      "email": "hamido.suleiman3@gmail.com",
+      "status": "active"
+    },
+    {
+      "teacher_id": "TCH-0002",
+      "full_name": "Mufti Khalil Koya",
+      "phone": "",
+      "email": "",
+      "status": "active"
+    },
+    {
+      "teacher_id": "TCH-0003",
+      "full_name": "Sheikh Abdul Qadir Kabdi",
+      "phone": "",
+      "email": "",
+      "status": "active"
+    },
+    {
+      "teacher_id": "TCH-0004",
+      "full_name": "Sheikh Abdul Hakeem",
+      "phone": "",
+      "email": "",
+      "status": "active"
+    }
+  ],
+  "years": [
+    {
+      "year_id": "YR-0001",
+      "label": "2026"
+    }
+  ],
+  "active_year_id": "YR-0001",
+  "terms": [
+    {
+      "term_id": "T1",
+      "year_id": "YR-0001",
+      "label": "Term 1"
+    },
+    {
+      "term_id": "T2",
+      "year_id": "YR-0001",
+      "label": "Term 2"
+    },
+    {
+      "term_id": "T3",
+      "year_id": "YR-0001",
+      "label": "Term 3"
+    },
+    {
+      "term_id": "T4",
+      "year_id": "YR-0001",
+      "label": "Term 4"
+    }
+  ],
+  "active_term_id": "T1",
+  "academic_progress": [
+    {
+      "progress_id": "PRG-0001",
+      "student_id": "STU-0001",
+      "term_id": "T1",
+      "target_year_paras": 5,
+      "pages_completed": 19
+    },
+    {
+      "progress_id": "PRG-0002",
+      "student_id": "STU-0001",
+      "term_id": "T2",
+      "target_year_paras": 5,
+      "pages_completed": 0
+    },
+    {
+      "progress_id": "PRG-0003",
+      "student_id": "STU-0001",
+      "term_id": "T3",
+      "target_year_paras": 5,
+      "pages_completed": 0
+    },
+    {
+      "progress_id": "PRG-0004",
+      "student_id": "STU-0001",
+      "term_id": "T4",
+      "target_year_paras": 5,
+      "pages_completed": 0
+    }
+  ],
+  "discipline_log": [],
+  "class_assignments": [
+    {
+      "assignment_id": "ASG-0001",
+      "student_id": "STU-0001",
+      "year_id": "YR-0001",
+      "class_id": "CLS-0003"
+    }
+  ],
+  "candidates": [],
+  "year_end_decisions": [],
+  "seq": {
+    "student": 1,
+    "class": 4,
+    "teacher": 4,
+    "guardian": 2,
+    "progress": 4,
+    "discipline": 0,
+    "year": 1,
+    "term": 0,
+    "assignment": 1,
+    "candidate": 0
+  },
+  "settings": {
+    "last_backup_at": "2026-09-19T07:51:33.227Z"
+  }
+}

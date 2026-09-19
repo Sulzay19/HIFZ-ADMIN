@@ -1,0 +1,53 @@
+{
+  "students": [],
+  "guardians": [],
+  "classes": [],
+  "teachers": [],
+  "years": [
+    {
+      "year_id": "YR-0001",
+      "label": "2026"
+    }
+  ],
+  "active_year_id": "YR-0001",
+  "terms": [
+    {
+      "term_id": "T1",
+      "year_id": "YR-0001",
+      "label": "Term 1"
+    },
+    {
+      "term_id": "T2",
+      "year_id": "YR-0001",
+      "label": "Term 2"
+    },
+    {
+      "term_id": "T3",
+      "year_id": "YR-0001",
+      "label": "Term 3"
+    },
+    {
+      "term_id": "T4",
+      "year_id": "YR-0001",
+      "label": "Term 4"
+    }
+  ],
+  "active_term_id": "T1",
+  "academic_progress": [],
+  "discipline_log": [],
+  "class_assignments": [],
+  "candidates": [],
+  "year_end_decisions": [],
+  "seq": {
+    "student": 0,
+    "class": 0,
+    "teacher": 0,
+    "guardian": 0,
+    "progress": 0,
+    "discipline": 0,
+    "year": 1,
+    "term": 0,
+    "assignment": 0,
+    "candidate": 0
+  }
+}
